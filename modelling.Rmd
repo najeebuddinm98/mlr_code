@@ -1,0 +1,81 @@
+---
+title: "Modelling"
+output:
+  html_document:
+    df_print: paged
+---
+
+## Here, we aim to build and train models on the preprocessed dataset produced from data_merging.ipynb.  
+
+First, we import the required libraries.
+```{r}
+library(ISLR)
+library(glmnet)
+```
+
+Now, we import in our dataset.
+```{r}
+df1 = read.csv("total_data.csv")
+df2 = df1[121:250,-1]
+head(df2)
+```
+We produce a pairsplot for all the features to get an initial look at our data.
+```{r}
+pairs(df2)
+```
+### For our first group of models, we perform simple linear regression with each predictor individually
+```{r}
+lm.fit1 = lm(Value~Exchange, data = df2)
+summary(lm.fit1)
+```
+```{r}
+lm.fit2 = lm(Value~Ratio_E_I, data = df2)
+summary(lm.fit2)
+```
+```{r}
+lm.fit3 = lm(Value~Interest, data = df2)
+summary(lm.fit3)
+```
+```{r}
+lm.fit4 = lm(Value~M1_supply, data = df2)
+summary(lm.fit4)
+```
+```{r}
+lm.fit5 = lm(Value~GDP, data = df2)
+summary(lm.fit5)
+```
+
+### For our second model, do Multiple Linear Regression basd on least squares method
+```{r}
+set.seed(1)
+mlm.fit = lm( Value~., data = df2)
+summary(mlm.fit)
+```
+```{r}
+mlm.pred = predict( mlm.fit, df2)
+mean((mlm.pred - df2$Value)^2)
+```
+
+Now, we plot curves for the original values and the predicted values from our MLR model.
+```{r}
+plot(as.Date(df1$Time[121:250]), df1$Value[121:250], type = "l", col = "blue", xlab = "Date (mm-yyyy)", ylab = "Inflation Rate (%)", lwd=2, main = "Comparison for Multiple Linear Regression Model (without interaction)", cex.main = 0.8, cex.lab=0.9, ylim = c(0,20))
+lines(as.Date(df1$Time[121:250]), mlm.pred, type="l", col="red", lwd=2)
+legend(x = "topright", col = c("blue", "red"), legend = c("Observed", "Predicted"), lty = 1, lwd=2)
+```
+For our third and final model, we perform Multiple Linear Regression with interaction terms based on least squares method.
+```{r}
+set.seed(1)
+mlm.fiti = lm( Value~.^2, data = df2)
+summary(mlm.fiti)
+```
+```{r}
+mlm.predi = predict( mlm.fiti, df2)
+mean((mlm.predi - df2$Value)^2)
+```
+Lastly, we plot curves for the original values and the predicted values from our MLR model withg interaction terms.
+```{r}
+plot(as.Date(df1$Time[121:250]), df1$Value[121:250], type = "l", col = "blue", xlab = "Date (mm-yyyy)", ylab = "Inflation Rate (%)", lwd=2, main = "Comparison for Multiple Linear Regression Model (with interaction)", cex.main = 0.8, cex.lab=0.9, ylim = c(0,20))
+lines(as.Date(df1$Time[121:250]), mlm.predi, type="l", col="red", lwd=2)
+legend(x = "topright", col = c("blue", "red"), legend = c("Observed", "Predicted"), lty = 1, lwd=2)
+```
+
